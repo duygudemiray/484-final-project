@@ -1,0 +1,102 @@
+import speech_recognition as sr 
+import pyaudio
+from time import ctime
+import time
+import os
+! pip install gtts
+from gtts import gTTS
+import requests, json
+!pip install flair
+from flair.data import Sentence
+from flair.models import SequenceTagger
+
+def listen():
+   
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("I am listening...")
+        audio = r.listen(source)
+    data = ""
+    try:
+        data = r.recognize_google(audio)
+        print("You said: " + data)
+    except sr.UnknownValueError:
+        print("I don't understand. Could you repeat that?")
+    except sr.RequestError as e:
+        print("Sorry, I don't understand.; {0}".format(e))
+    return data
+    
+    def Tagger(data):
+    """Performs entity recognition using the package Flair"""
+    sentence = Sentence(data)
+    tagger = SequenceTagger.load('ner-ontonotes-fast')
+    tagger.predict(sentence)
+    tag_dict = sentence.to_dict('ner')
+    entities = tag_dict['entities']
+    label_dic = {}
+    for i in range(len(entities)):
+        label = entities[i]
+        for k in label.items():
+        
+    return label_dic
+
+def ReturnDic():
+    """Takes voice input and returns the date, time & location information"""
+    time.sleep(2)
+    listening = True
+    while listening == True:
+        data = listen()
+        listening = Tagger(data)
+    return listening
+
+ReturnDic()
+
+#elif's version of duygu's code -- to find out whether we can switch btwn F/C
+#the code below only prints in C but doesn't really matter since it only shows weather for Istanbul
+
+import re 
+import urllib.request 
+
+class AppURLopener(urllib.request.FancyURLopener): 
+    version = "Mozilla/5.0"
+
+opener = AppURLopener()
+response = opener.open('https://weather.com/tr-TR/weather/today/l/33d1e415eb66f3e1ab35c3add45fccf4512715d329edbd91c806a6957e123b49')
+file_1 = response.read().decode('utf-8') 
+
+pattern_1 = re.compile("([0-9]+)°") 
+
+matches_1 = re.findall(pattern_1, file_1) 
+
+print(matches_1) #returns in celsius
+
+def CleanList(matches):
+  """Returns the relevant numbers from the scraped data""" 
+
+  a=0
+  while a<1:
+    matches.pop(1)
+    a+=1
+
+  b=0
+  while b<=8:
+    matches.pop(5)
+    b+=1 
+  
+  return matches
+
+CleanList(matches_1)
+
+#maybe we should get rid of everything that comes after day_after_n. 
+
+labels = ["cur_weather", "morning", "afternoon", "evening", "overnight", "tomorrow", "tomorrow_night", "day_after", "day_after_n", "after_after", "after_after_n", "idk", "idk_n"]
+
+def CreateDictionary(matches, labels):
+  """Creating a dictionary from the numbers obtained from the weather channel and times of the day"""
+
+  weather = {}
+
+  for k in range(len(labels)):
+    weather[labels[k]] = matches[k]
+  
+  return weather
